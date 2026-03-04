@@ -11,13 +11,21 @@
 4. [LAMPS / X.509 / CMS (PKI)](#lamps--x509--cms-pki)
 5. [IPsec / IKEv2](#ipsec--ikev2)
 6. [SSH](#ssh)
-7. [COSE / JOSE](#cose--jose)
-8. [OpenPGP](#openpgp)
-9. [MLS (Messaging Layer Security)](#mls-messaging-layer-security)
-10. [CFRG (Crypto Forum Research Group)](#cfrg-crypto-forum-research-group)
-11. [Major Cross-WG Debates](#major-cross-wg-debates)
-12. [Real-World Deployment Status](#real-world-deployment-status)
-13. [Regulatory Drivers](#regulatory-drivers)
+7. [HPKE](#hpke)
+8. [COSE / JOSE](#cose--jose)
+9. [OpenPGP](#openpgp)
+10. [MLS (Messaging Layer Security)](#mls-messaging-layer-security)
+11. [EAP (Extensible Authentication Protocol)](#eap-extensible-authentication-protocol)
+12. [EDHOC / LAKE](#edhoc--lake)
+13. [ACME](#acme)
+14. [DNSSEC](#dnssec)
+15. [UTA (Using TLS in Applications)](#uta-using-tls-in-applications)
+16. [CFRG (Crypto Forum Research Group)](#cfrg-crypto-forum-research-group)
+17. [PQUIP Working Group](#pquip-working-group)
+18. [Non-IETF PQC Standards](#non-ietf-pqc-standards)
+19. [Major Cross-WG Debates](#major-cross-wg-debates)
+20. [Real-World Deployment Status](#real-world-deployment-status)
+21. [Regulatory Drivers](#regulatory-drivers)
 
 ---
 
@@ -27,14 +35,19 @@
 |------|-----------|--------------|
 | **KEM Key Exchange** | PRODUCTION READY | X25519+ML-KEM-768 deployed on ~60% of web traffic |
 | **PQ Signatures in TLS** | MAJOR UNSOLVED PROBLEM | 14-39 KB handshake overhead; no production solution |
-| **PKI / Certificates** | 70-80% READY | Core algorithm bindings nearly done; composite debate ongoing |
+| **PKI / Certificates** | 70-80% READY | Core algorithm bindings published as RFCs; composite debate ongoing |
 | **IPsec / IKEv2** | ADVANCING WELL | ML-KEM adopted, PQC auth passed WG Last Call |
 | **SSH** | FURTHEST AHEAD | NTRU Prime default in OpenSSH 5+ years; ML-KEM at IETF Last Call |
 | **OpenPGP** | IESG APPROVED | Most advanced PQ draft in IETF -- composite approach |
+| **HPKE** | PROGRESSING | PQ/hybrid KEMs for HPKE at v-04, WG document |
 | **COSE/JOSE** | PROGRESSING | Signature drafts mature; KEM progressing; hybrid HPKE lagging |
 | **MLS** | EARLY STAGE | Innovative combiner approach; WG adopted |
+| **EAP** | EARLY STAGE | PQC EAP-TLS and EAP-AKA' drafts emerging for enterprise/telecom |
+| **EDHOC (LAKE)** | EARLY STAGE | PQ cipher suites and KEM auth for constrained IoT |
+| **ACME** | ADVANCING | Profiles mechanism in production (Let's Encrypt); profile sets for PQC transition |
+| **DNSSEC** | RESEARCH | Sig sizes far exceed UDP limits; strategy and research agenda drafts |
 
-**Bottom line:** KEM-based key exchange migration is well underway and largely successful. Signature/authentication migration remains the critical unsolved challenge, primarily due to the size impact of post-quantum signatures on latency-sensitive protocols.
+**Bottom line:** KEM-based key exchange migration is well underway and largely successful. Signature/authentication migration remains the critical unsolved challenge, primarily due to the size impact of post-quantum signatures on latency-sensitive protocols. The ecosystem is broadening with PQC work now active in HPKE, EAP, EDHOC, ACME, and DNSSEC.
 
 ---
 
@@ -91,6 +104,34 @@ Defines pure (non-hybrid) ML-KEM-512/768/1024 as NamedGroups.
 | Clean WG adoption | Certificate chains add ~17 KB to handshakes |
 | Fast sign/verify vs SLH-DSA | Exceeds TCP initcwnd (~14 KB), adds round-trips |
 | | No hybrid/composite mechanism defined here |
+
+---
+
+### draft-ietf-tls-cert-abridge (Certificate Compression / Abridged Certs)
+**Status:** WG Document, v-02
+
+Introduces TLS certificate compression using a shared dictionary of WebPKI root and intermediate certificates, eliminating them from the handshake chain to reduce PQ certificate overhead.
+
+| Pros | Cons |
+|------|------|
+| Addresses critical bandwidth challenge of PQC certificate chains | Requires clients and servers to maintain synchronized dictionaries |
+| Dictionary-based approach provides better compression than general-purpose algorithms | Benefits diminish if leaf certificates grow significantly with PQC |
+| Applicable beyond TLS to CT logs and other PKI storage systems | Complementary but not sufficient alone for PQ sig size problem |
+| Treats CAs and website operators equitably | |
+
+---
+
+### draft-sheffer-tls-pqc-continuity (PQC Downgrade Protection)
+**Status:** Individual, v-01 (Mar 2026)
+
+Introduces a TLS extension allowing peers to cache commitments about PQC/composite certificate support for a specified duration, preventing downgrade attacks during PQC migration. Inspired by HSTS.
+
+| Pros | Cons |
+|------|------|
+| Addresses real downgrade vulnerability during PQC transition | Individual draft, not WG-adopted |
+| HSTS-inspired design leverages proven pattern | Requires clients to maintain state/cache for visited servers |
+| Works at TLS layer regardless of application protocol | May create issues if cached commitments become stale |
+| Protects both client and server certificate scenarios | |
 
 ---
 
@@ -174,15 +215,17 @@ Defines pure (non-hybrid) ML-KEM-512/768/1024 as NamedGroups.
 |-----|-------|-------------|
 | **RFC 9629** | KEMRecipientInfo for CMS | Foundation for all CMS KEM usage |
 | **RFC 9763** | Related Certificates for Multi-Auth | Non-composite hybrid binding (NSA approach) |
+| **RFC 9802** | HSS/LMS and XMSS for X.509 | Stateful hash-based sigs in certificates |
 | **RFC 9810** | CMP v3 with KEM Support | PKI enrollment infrastructure for PQC |
 | **RFC 9814** | SLH-DSA in CMS | First PQC CMS signature RFC |
-| **RFC (published)** | SLH-DSA in X.509 | Hash-based signatures in certificates |
+| **RFC 9881** | ML-DSA for X.509 | Primary NIST PQC sig for certificates |
+| **RFC 9882** | ML-DSA in CMS | CMS counterpart to RFC 9881 |
+| **RFC 9909** | SLH-DSA for X.509 | Conservative hash-based sig for certificates |
 
 ### Near-Complete (IESG Approved)
 
 | Draft | Status | Notes |
 |-------|--------|-------|
-| **draft-ietf-lamps-dilithium-certificates** | IESG Approved, in RFC Editor queue | ML-DSA algorithm IDs for X.509 |
 | **draft-ietf-lamps-kyber-certificates** | IESG Approved, in RFC Editor queue | ML-KEM algorithm IDs for X.509 |
 
 ### In Progress
@@ -192,7 +235,47 @@ Defines pure (non-hybrid) ML-KEM-512/768/1024 as NamedGroups.
 | **draft-ietf-lamps-cms-kyber** v-13 | IESG ballot active | ML-KEM in CMS |
 | **draft-ietf-lamps-pq-composite-kem** v-12 | IESG evaluation | Composite ML-KEM + traditional |
 | **draft-ietf-lamps-pq-composite-sigs** v-15 | WG Draft, OIDs allocated | Composite ML-DSA + traditional |
-| **draft-ietf-lamps-x509-shbs** v-13 | IESG evaluation | Stateful hash-based sigs (HSS/XMSS) |
+| **draft-ietf-lamps-cms-composite-sigs** v-04 | Submitted to IESG | Composite ML-DSA in CMS |
+
+### FN-DSA (FALCON) Drafts
+
+| Draft | Status | Notes |
+|-------|--------|-------|
+| **draft-turner-lamps-fn-dsa-certificates** v-00 | Individual (Nov 2025) | FN-DSA algorithm IDs for X.509 |
+| **draft-turner-lamps-cms-fn-dsa** v-00 | Individual (Nov 2025) | FN-DSA for CMS signatures |
+
+### draft-ietf-lamps-cms-composite-sigs (Composite ML-DSA in CMS)
+**Status:** Submitted to IESG for Publication, v-04 (Feb 2026), Proposed Standard
+
+Specifies conventions for using Composite ML-DSA algorithms (ML-DSA combined with RSA, ECDSA, or EdDSA) within CMS.
+
+| Pros | Cons |
+|------|------|
+| Advanced standardization stage (IESG publication requested) | Double signature overhead significantly increases message size |
+| Composite provides security if either algorithm is broken | Implementation complexity managing two signature algorithms |
+| Enables gradual migration (legacy verifies traditional, PQ-aware verifies both) | Composite debate ongoing -- necessity questioned |
+| Leverages mature CMS infrastructure (S/MIME, signed firmware) | |
+
+### FN-DSA Certificates and CMS -- Pros/Cons
+
+| Pros | Cons |
+|------|------|
+| FN-DSA offers smallest PQ signature sizes (~690/1,233 bytes) | FIPS 206 not yet finalized -- spec may change |
+| Enables early adoption path for upcoming NIST standard | Individual drafts, uncertain standardization timeline |
+| Alternative lattice-based sig diversifying PQC portfolio | Adding another sig algorithm increases ecosystem fragmentation |
+| Completes PKI ecosystem coverage (X.509 + CMS) | |
+
+### draft-reddy-lamps-x509-pq-commit (PQC Hosting Continuity)
+**Status:** Individual, v-01 (Feb 2026)
+
+Introduces X.509 certificate extension enabling subjects to signal intent to maintain PQC/composite certificates beyond standard expiration, helping relying parties detect downgrade and MITM attacks during PQC migration.
+
+| Pros | Cons |
+|------|------|
+| Addresses downgrade attack vulnerability during PQC transition | Individual draft, uncertain standardization path |
+| Certificate-embedded commitment is cryptographically authenticated | Adds complexity to certificate issuance workflows |
+| Non-critical extension maintains backward compatibility | Operational burden if organizations can't maintain commitments |
+| Complementary to TLS-layer approaches (draft-sheffer) | |
 
 ### Early / Stalled
 
@@ -261,6 +344,18 @@ Defines pure (non-hybrid) ML-KEM-512/768/1024 as NamedGroups.
 | ISO standardization expected 2026 Q1 | Adds complexity: ML-KEM vs FrodoKEM choice |
 | Strong support in adoption call | |
 
+### draft-reddy-ipsecme-ikev2-hybrid-reliable (Composite KE + TCP for IKEv2)
+**Status:** Individual, v-00 (Jan 2026)
+
+Proposes PQ/traditional hybrid composite key exchange algorithms for IKEv2 with vetted pairings (ecp256-mlkem768, ecp384-mlkem1024, curve25519-mlkem768) and TCP transport to prevent IP fragmentation of large PQC key material.
+
+| Pros | Cons |
+|------|------|
+| Combined KE payload reduces message count vs separate exchanges | TCP fallback adds implementation complexity and attack surface |
+| TCP transport directly solves IP fragmentation problem | Individual draft, not WG-adopted |
+| Vetted algorithm pairings reduce configuration errors | Composite approach locks in specific pairings |
+| Pathway for pure PQ IKEv2 when traditional algorithms obsolete | |
+
 ---
 
 ## SSH
@@ -287,6 +382,36 @@ Defines: `mlkem768nistp256-sha256`, `mlkem1024nistp384-sha384`, `mlkem768x25519-
 | Hybrid with X25519 provides safety net | Long-term future unclear as ML-KEM gains traction |
 
 **Controversy:** Formal appeal filed over publishing RFC for non-NIST algorithm. IESG approved as Informational, acknowledging deployment reality.
+
+### draft-harrison-sshm-mlkem (Standalone ML-KEM for SSH)
+**Status:** Individual, v-01 (Dec 2025)
+
+Proposes pure ML-KEM key exchange methods (mlkem512, mlkem768, mlkem1024) for SSH without hybrid traditional algorithm combinations. Authored by Cisco and AWS.
+
+| Pros | Cons |
+|------|------|
+| Pure PQ simplifies implementation vs hybrid | Individual draft, not WG-adopted |
+| Required for eventual CNSA 2.0 pure-PQ compliance | No hybrid fallback if ML-KEM vulnerability discovered |
+| Cisco/AWS authorship signals industry deployment interest | Competes with hybrid approach for adoption priority |
+| Three security levels for flexible risk tolerance | |
+
+---
+
+## HPKE
+
+### draft-ietf-hpke-pq (PQ/Hybrid KEMs for HPKE)
+**Status:** WG Document, v-04 (Mar 2026), Standards Track
+
+Extends HPKE (RFC 9180) with post-quantum KEMs: pure ML-KEM variants (512/768/1024) and hybrid PQ/traditional combinations (ML-KEM + P-256, X25519, P-384), plus SHA-3 based KDFs (SHAKE, TurboSHAKE).
+
+| Pros | Cons |
+|------|------|
+| Both pure PQ and hybrid options for different risk profiles | Hybrid combinations increase implementation complexity |
+| Leverages widely-implemented HPKE framework | Larger keys/ciphertexts impact bandwidth-constrained applications |
+| Comprehensive test vectors and JSON specs for interop | 9 algorithm combinations may fragment deployment |
+| SHA-3 KDF options provide quantum-resistant key derivation | Foundation draft -- many protocols depend on this completing |
+
+**Significance:** This is a foundational draft. HPKE is used across JOSE, COSE, MLS, and other protocols. PQ HPKE unblocks PQ support in all downstream protocols.
 
 ---
 
@@ -327,6 +452,18 @@ Defines: `mlkem768nistp256-sha256`, `mlkem1024nistp384-sha384`, `mlkem768x25519-
 | 11 revisions show sustained effort | Complex dependency chain (COSE-HPKE, JOSE-HPKE, HPKE-PQ) |
 | | First adoption call deferred |
 
+### draft-skokan-jose-hpke-pq-pqt (PQ/T Algorithm Registrations for JOSE)
+**Status:** Individual, v-03 (Feb 2026)
+
+Registers post-quantum and hybrid PQ/traditional algorithm identifiers for JSON Web Encryption using the HPKE framework. Defines 12 algorithm combinations (hybrid HPKE-8 through HPKE-13, pure PQ HPKE-14 through HPKE-17) plus key encryption variants.
+
+| Pros | Cons |
+|------|------|
+| Brings PQC to widely-used JOSE/JWE ecosystem (web tokens, API security) | Individual draft, may face adoption challenges |
+| Comprehensive coverage: both hybrid and pure PQ options | 12+ algorithm registrations could create selection confusion |
+| Leverages proven HPKE framework rather than new constructions | JWE overhead + PQC key sizes may challenge size-constrained use (cookies, URL tokens) |
+| JSON Web Key representation using AKP key type integrates cleanly | |
+
 ---
 
 ## OpenPGP
@@ -364,6 +501,137 @@ Combines traditional MLS session with PQ session. Two modes: PARTIAL (traditiona
 
 ---
 
+## EAP (Extensible Authentication Protocol)
+
+### draft-reddy-emu-pqc-eap-tls (PQC in EAP-TLS)
+**Status:** Individual, v-02 (Jan 2026)
+
+Proposes modifications to EAP-TLS and EAP-TTLS to incorporate PQC, addressing challenges with large PQ certificate sizes and extended certificate chains in enterprise and wireless environments. Builds on RFC 9191 (large certs in EAP).
+
+| Pros | Cons |
+|------|------|
+| Protects widely-deployed enterprise authentication (802.1X, WPA-Enterprise) | Individual draft, limited deployment momentum |
+| Addresses specific PQ cert size challenges identified in RFC 9191 | Large PQ cert chains may exceed MTU in wireless environments |
+| Covers both EAP-TLS and EAP-TTLS | Requires coordinated upgrades across RADIUS servers, authenticators, and supplicants |
+| High-value enterprise targets vulnerable to HNDL attacks | |
+
+### draft-ietf-emu-pqc-eapaka (PQ KEMs for EAP-AKA')
+**Status:** WG Document, v-01 (Feb 2026)
+
+Enhances EAP-AKA' Forward Secrecy with quantum-resistant cryptography by integrating ML-KEM (512/768/1024) through new AT_PUB_KEM and AT_KEM_CT attributes, with attribute-level fragmentation for large key material.
+
+| Pros | Cons |
+|------|------|
+| WG document indicates EMU consensus on need for PQC in cellular auth | Fragmentation mechanism adds protocol complexity |
+| Maintains backward compatibility for gradual deployment | Limited to EAP-AKA' (not broader EAP-AKA family) |
+| Attribute-level fragmentation addresses cellular MTU limitations | Cellular infrastructure upgrade cycles are slow |
+| Protects cellular authentication against quantum threats | |
+
+**Significance:** Critical for 3GPP/5G PQC migration. Connects IETF PQC work to telecom infrastructure.
+
+---
+
+## EDHOC / LAKE
+
+### draft-spm-lake-pqsuites (PQ Cipher Suites for EDHOC)
+**Status:** Individual, v-01 (Oct 2025)
+
+Introduces post-quantum cipher suites for EDHOC using ML-DSA for digital signatures and ML-KEM for key exchange. Supports both signature-based and PSK authentication methods. Ericsson authorship.
+
+| Pros | Cons |
+|------|------|
+| Brings PQC to EDHOC for IoT/CoAP ecosystems | ML-KEM-512 and ML-DSA-44 introduce "significantly higher overhead" for constrained devices |
+| Major IoT vendor (Ericsson) authorship | Individual draft, may slow IoT ecosystem adoption |
+| Both signature and PSK auth modes for flexibility | EDHOC itself still relatively new protocol |
+| Aligns with NIST-standardized algorithms | |
+
+### draft-lake-pocero-authkem-edhoc (KEM Auth for EDHOC)
+**Status:** Individual, v-00 (Oct 2025)
+
+Extends EDHOC with KEM-based authentication method enabling signature-free PQ authentication using ML-KEM. Five-message handshake with ephemeral and static KEM key pairs. Academic origin (R.C. ATHENA).
+
+| Pros | Cons |
+|------|------|
+| KEM-based auth avoids large PQ signature overhead | Five-message handshake increases round-trips |
+| Signature-free reduces computational burden on IoT processors | Academic origin, may lack industry deployment momentum |
+| Maintains forward secrecy and mutual authentication | Static KEM keys require different key management than signature PKI |
+| Alternative to signature-based approach for constrained devices | Very early stage (v-00) |
+
+---
+
+## ACME
+
+### draft-ietf-acme-profiles (ACME Profiles)
+**Status:** WG Document, v-01 (Mar 2026)
+
+Defines mechanism enabling ACME servers to offer different certificate profiles and allowing clients to select preferred profiles during ordering. Moves profile selection from CSR fields into Order resource.
+
+| Pros | Cons |
+|------|------|
+| **Already in production** (Let's Encrypt, Boulder, Pebble, Certbot, Lego, Caddy) | Profile proliferation may create confusion |
+| Simplifies PQC certificate issuance via standardized profile selection | Requires ACME server and client upgrades |
+| Reduces security risks by avoiding complex CSR parsing | |
+| Strong standardization momentum with multiple implementations | |
+
+**Significance:** This is the key enabler for automated PQC certificate issuance. Without profiles, ACME clients have no standard way to request PQC certificates.
+
+### draft-davidben-acme-profile-sets (ACME Profile Sets)
+**Status:** Individual, v-00 (Oct 2025), candidate for ACME WG
+
+Defines mechanism for ACME servers to indicate collections of related certificate profiles, enabling automatic obtainment of multiple certificates to support applications serving both legacy and PQ-capable clients. Google authorship.
+
+| Pros | Cons |
+|------|------|
+| Directly addresses PQC transition challenge (serve legacy + PQ clients simultaneously) | Individual draft, not yet WG-adopted |
+| Automatic multi-certificate issuance reduces operational burden | Managing multiple certificates per domain increases complexity |
+| Profile set concept enables coordinated updates during renewal | Could significantly increase CA workload |
+| Google authorship suggests strong standardization potential | |
+
+---
+
+## DNSSEC
+
+### draft-sheth-pqc-dnssec-strategy (PQC DNSSEC Strategy)
+**Status:** Individual, v-00 (Oct 2025)
+
+Proposes deploying two categories of PQ algorithms for DNSSEC -- conservatively designed algorithms (potentially using Merkle Tree Ladder mode) and low-impact drop-in alternatives. Verisign Labs authorship.
+
+| Pros | Cons |
+|------|------|
+| Dual-algorithm strategy balances conservative security with practicality | Individual draft, no DNSOP WG consensus yet |
+| Merkle Tree Ladder mode addresses DNSSEC sig size challenge | Dual algorithm deployment increases infrastructure complexity |
+| Verisign Labs + academic authorship (operational + research) | PQC sig sizes fundamentally challenge UDP transport |
+| Fallback mechanism provides resilience if low-impact algorithm breaks | |
+
+### draft-fregly-research-agenda-for-pqc-dnssec (PQC DNSSEC Research Agenda)
+**Status:** Individual, v-02, **expired** (Dec 2024)
+
+Proposed collaborative research framework examining how PQ signatures will impact DNSSEC operations. Concluded that either DNS protocol enhancements or shift away from UDP (or combination) will be needed.
+
+| Pros | Cons |
+|------|------|
+| Research-oriented approach acknowledges fundamental uncertainties | Expired -- lack of continued development |
+| Multi-institution collaboration (6 authors) | Research agenda rather than solution |
+| Identified critical question about UDP viability for PQC DNSSEC | Conclusion that major DNS changes needed is concerning for timeline |
+
+---
+
+## UTA (Using TLS in Applications)
+
+### draft-ietf-uta-pqc-app (PQC Recommendations for TLS Applications)
+**Status:** WG Document, v-01 (Feb 2026)
+
+Provides best practices for device manufacturers and application developers implementing PQC in TLS-based applications. Covers hybrid/pure PQ key exchange, authentication mechanisms, certificate optimization, DNS encryption, and operational guidance.
+
+| Pros | Cons |
+|------|------|
+| Comprehensive guidance covering entire TLS ecosystem | Best practices may become outdated quickly as PQC matures |
+| Addresses practical deployment challenges (cert size optimization) | Balancing hybrid vs pure PQ recs may create confusion |
+| Provides migration timeline recommendations | Heavy focus on cert optimization confirms PQ cert size pain points |
+| Covers both confidentiality (KEX) and authentication (certs/sigs) | |
+
+---
+
 ## CFRG (Crypto Forum Research Group)
 
 ### draft-connolly-cfrg-xwing-kem v-09 (X-Wing Hybrid KEM)
@@ -389,6 +657,129 @@ Combines ML-KEM-768 + X25519 into a specific, optimized hybrid KEM.
 | 35-40% signature size reduction with 192-bit params | 192-bit may face resistance from 256-bit mandaters |
 | IANA code points already assigned | IRTF Informational only |
 | Extremely mature (19 revisions) | |
+
+---
+
+## PQUIP Working Group
+
+### draft-ietf-pquip-pqc-engineers (PQC for Engineers)
+**Status:** WG Adopted
+
+Engineer-focused PQC primer providing practical guidance for protocol implementers.
+
+### draft-ietf-pquip-pqc-hsm-constrained (PQC for HSMs/Constrained Devices)
+**Status:** WG Document, v-03 (Jan 2026), **Waiting for Write-Up**
+
+Provides guidance for integrating PQC into resource-limited devices (IoT nodes, lightweight HSMs). Covers seed-based key generation, ephemeral key handling, cryptographic task offloading, and firmware update considerations.
+
+| Pros | Cons |
+|------|------|
+| WG consensus indicates broad recognition of constrained device challenges | Constrained devices may still struggle even with optimizations |
+| Covers all three NIST algorithms (ML-KEM, ML-DSA, SLH-DSA) | Seed-based approaches introduce key management complexity |
+| Practical optimization techniques (lazy expansion, pre-hashing, seed storage) | Firmware update authentication creates circular dependency during PQC transition |
+| Addresses critical deployment barrier for IoT PQC adoption | |
+
+### draft-reddy-pquip-pqc-signature-migration (PQC Signature Migration)
+**Status:** Individual, v-01 (Oct 2025)
+
+Evaluates three deployment models for PQ signature migration: composite certificates, dual certificates, and PQC-only certificates. Nokia, Citrix, and Zscaler authorship.
+
+| Pros | Cons |
+|------|------|
+| Directly addresses critical signature migration decision | Individual draft, limited authority vs WG consensus |
+| Comparative evaluation helps informed deployment decisions | Three-way comparison may not provide clear recommendation |
+| Enterprise deployment perspective (Nokia, Citrix, Zscaler) | Rapid PQC evolution may quickly date analysis |
+
+### draft-kwiatkowski-pquip-pqc-migration (PQC Migration Guidance)
+**Status:** Individual, **expired** (Jul 2025)
+
+General PQC migration framework for protocol designers, developers, and implementers.
+
+| Pros | Cons |
+|------|------|
+| Comprehensive migration guidance targeting multiple stakeholders | Expired, likely superseded by newer PQUIP drafts |
+| Addressed full protocol design lifecycle | Content may be outdated |
+
+### draft-li-pquip-teleco-pqc-migration (Telecom PQC Migration)
+**Status:** Individual, v-01, **expired** (Jul 2025)
+
+Addressed PQC readiness in telecommunications infrastructure, examining 3GPP-governed telecom networks and proposing migration strategies. Huawei authorship.
+
+| Pros | Cons |
+|------|------|
+| Focused on critical telecom infrastructure | Expired, possible lack of community interest |
+| Integration perspective between 3GPP and IETF standards | 3GPP may be driving telecom PQC independently |
+| Major telecom vendor perspective (Huawei) | |
+
+### draft-prabel-pquip-pqc-guidance (PQC Deployment Guidance)
+**Status:** Individual, v-01 (Oct 2025)
+
+Comprehensive overview of PQ algorithms covering KEMs (ML-KEM, FrodoKEM, Classic McEliece, HQC, NTRU) and digital signatures (ML-DSA, FN-DSA, SLH-DSA, LMS, XMSS). Includes algorithm parameters and distinguishing features.
+
+| Pros | Cons |
+|------|------|
+| Comprehensive algorithm catalog including NIST and alternatives | Individual draft, limited authoritative weight |
+| Unified presentation format enables direct algorithm comparison | Including non-NIST algorithms may create confusion |
+| Broader coverage than NIST-only focus | Algorithm landscape evolving rapidly |
+
+### Other PQUIP Documents
+
+| Draft | Status | Notes |
+|-------|--------|-------|
+| **draft-hale-pquip-hybrid-signature-spectrums** | Active | Design goals/security analysis for hybrid sigs |
+| **draft-vaira-pquip-pqc-use-cases** | Active | Migration strategies |
+
+---
+
+## Non-IETF PQC Standards
+
+### NIST Special Publications
+
+| Document | Status | Significance |
+|----------|--------|-------------|
+| **SP 800-227** | Final (Nov 2025) | Recommendations for Key-Encapsulation Mechanisms. Defines guidance for hybrid/composite KEM usage. Key for FIPS certification of hybrid approaches. |
+| **SP 800-131A Rev.3** | Draft | Transitioning use of crypto algorithms. Updated with PQC transition timelines and deprecation schedules. |
+| **IR 8547** | Final (Feb 2025) | Transition to Post-Quantum Cryptography Standards. Formal migration planning guide with 15-year classical crypto phase-out roadmap. |
+
+### ETSI
+
+| Document | Status | Significance |
+|----------|--------|-------------|
+| **TS 103 744** | Published | Quantum-Safe Hybrid Key Exchanges. Framework for hybrid approaches used across European deployments. |
+| **TS 104 015** | In development | Migration Strategies for PQC. Practical roadmap for telecom operators. |
+| **TR 103 619** | Published | Quantum-Safe VPN. PQC integration guidance for VPN technologies. |
+| **GR QSC 001-007** | Various | QSC group reports covering threat analysis, implementation, and migration. |
+
+### ISO/IEC
+
+| Document | Status | Significance |
+|----------|--------|-------------|
+| **ISO/IEC 18033-2 Amd** | In development | Adding ML-KEM to encryption algorithms standard. International standardization. |
+| **ISO/IEC 14888** | In development | Adding ML-DSA/SLH-DSA to digital signature standard. |
+
+### 3GPP
+
+| Document | Status | Significance |
+|----------|--------|-------------|
+| **TR 33.703** | Study phase | Study on PQC for 3GPP systems. Evaluates impact on 5G/6G auth, key agreement, and protocol signaling. Connects to IETF EAP-AKA' PQC work. |
+
+### Industry Standards
+
+| Organization | Document | Status | Significance |
+|-------------|----------|--------|-------------|
+| **W3C** | Web Crypto API Modern Algorithms | Proposal stage | Adding ML-KEM, ML-DSA to Web Cryptography API for browser PQC. |
+| **OASIS** | KMIP 3.0 | Published | Key Management Interoperability Protocol with PQC algorithm support. |
+| **OASIS** | PKCS#11 v3.2 | In development | Cryptographic token interface adding ML-KEM, ML-DSA, SLH-DSA mechanism types. Critical for HSM interoperability. |
+| **TCG** | TPM 2.0 Library Spec V185 | Published | TPM 2.0 with PQC algorithm support (ML-KEM, ML-DSA). Hardware root-of-trust PQC readiness. |
+| **IEEE** | P802.11 PQC Study Group | Active (2025) | Studying PQC impact on Wi-Fi (802.11) authentication and key exchange. SAE/OWE implications. |
+
+### National Agency Guidance
+
+| Agency | Document | Status | Significance |
+|--------|----------|--------|-------------|
+| **BSI** (Germany) | TR-02102-1 | Updated 2025 | Crypto recommendations including PQC. Mandates PQC for critical infrastructure by June 2026. |
+| **ANSSI** (France) | PQC Position Papers | Published (2022, updated 2024) | Recommends hybrid approaches. Composite sigs preferred. Three-phase migration timeline through 2030. |
+| **EU** | PQC Roadmap | In development | Coordinated member-state PQC migration under EU Cybersecurity Act. |
 
 ---
 
@@ -423,15 +814,18 @@ Combines ML-KEM-768 + X25519 into a specific, optimized hybrid KEM.
 |----------|--------|
 | **TLS** | ML-DSA adds ~17 KB; exceeds TCP initcwnd; extra round-trip |
 | **DNSSEC** | SLH-DSA 7,856 bytes vs ECDSA 64 bytes (123x increase); exceeds UDP MTU |
+| **EAP** | PQ cert chains exceed wireless MTU limits; require fragmentation |
+| **EDHOC** | ML-DSA "significantly higher overhead" for constrained IoT devices |
 | **General** | No pre-Q-day security benefit for signatures (only active attack risk) |
 
 **Proposed Mitigations:**
 - Merkle Tree Certificates (most promising -- <800 byte proofs)
 - KEMTLS (replace handshake signatures with KEM-based auth -- research stage)
 - FN-DSA / FALCON (smaller signatures but FIPS 206 delayed)
-- Certificate compression
+- Certificate compression (draft-ietf-tls-cert-abridge)
 - Merkle Tree Ladder mode for DNSSEC
 - QNAME-Based Fragmentation for DNS
+- KEM-based auth for EDHOC (draft-lake-pocero-authkem-edhoc)
 
 ### 4. Lattice Security Concerns
 
@@ -440,6 +834,15 @@ No practical break of ML-KEM or ML-DSA announced, but active hedging:
 - HQC selected as backup KEM (code-based, not lattice-based)
 - NIST additional signatures competition provides non-lattice diversity
 - Community maintains caution due to relative youth of lattice cryptanalysis
+
+### 5. Downgrade Protection During PQC Transition
+
+Emerging concern: how to prevent MITM attackers from stripping PQC support during the transition period when servers support both traditional and PQC certificates.
+
+| Approach | Draft | Mechanism |
+|----------|-------|-----------|
+| TLS-layer caching | draft-sheffer-tls-pqc-continuity | HSTS-inspired TLS extension caching PQC commitments |
+| Certificate-embedded commitment | draft-reddy-lamps-x509-pq-commit | X.509 extension signaling PQC intent |
 
 ---
 
@@ -462,6 +865,12 @@ No practical break of ML-KEM or ML-DSA announced, but active hedging:
 - Cloudflare will add ML-DSA certificate support when CAs support them (estimated 2026)
 - MTC rollout phases: feasibility now, CT Log onboarding Q1 2027, Chrome CQRS Q3 2027
 
+### Certificate Automation (ACME)
+
+- ACME Profiles mechanism already in production at Let's Encrypt
+- Profile Sets draft provides multi-certificate issuance for PQC transition
+- Automated PQC certificate issuance expected to follow algorithm standardization
+
 ---
 
 ## Regulatory Drivers
@@ -470,8 +879,12 @@ No practical break of ML-KEM or ML-DSA announced, but active hedging:
 |-----------|-------------|
 | **US EO 14144** (Jan 2025) | Agencies must list PQC-ready product categories, mandate support within 90 days |
 | **NSA CNSA 2.0** | Software/firmware signing: exclusive ML-DSA by 2030; web/cloud: exclusive ML-KEM-1024 by 2033 |
+| **NIST IR 8547** | Formal deprecation schedule: 15-year classical crypto phase-out roadmap |
+| **NIST SP 800-227** | Recommendations for KEM usage including hybrid/composite approaches |
 | **Germany BSI** | PQC for critical infrastructure by June 2026 |
-| **France ANSSI** | Recommends hybrid approaches during transition |
+| **France ANSSI** | Recommends hybrid approaches during transition; three-phase timeline through 2030 |
+| **EU PQC Roadmap** | Coordinated member-state PQC migration under EU Cybersecurity Act |
+| **3GPP TR 33.703** | PQC study for 5G/6G systems |
 
 ---
 
@@ -483,37 +896,63 @@ No practical break of ML-KEM or ML-DSA announced, but active hedging:
 | 2 | draft-ietf-tls-mlkem | TLS | IETF Last Call (controversial) | Informational | High |
 | 3 | draft-ietf-tls-mldsa | TLS | WG, v-01 | Informational | Medium |
 | 4 | draft-ietf-tls-hybrid-design | TLS | WG, v-16 | Informational | High |
-| 5 | draft-ietf-plants-merkle-tree-certs | PLANTS | WG, v-02 | Standards | Medium |
-| 6 | draft-ietf-tls-key-share-prediction | TLS | WG, v-03 | Standards | Medium-High |
-| 7 | draft-reddy-tls-slhdsa | TLS | Individual, adoption call | Standards | Low |
-| 8 | draft-reddy-tls-composite-mldsa | TLS | Individual, likely expired | Standards | Stalled |
-| 9 | draft-farrell-tls-pqg | TLS | Individual, v-04 | BCP | Medium |
-| 10 | draft-ietf-lamps-dilithium-certificates | LAMPS | **IESG Approved** | Standards | Near-done |
-| 11 | draft-ietf-lamps-kyber-certificates | LAMPS | **IESG Approved** | Standards | Near-done |
-| 12 | draft-ietf-lamps-cms-kyber | LAMPS | IESG ballot | Standards | Near-done |
-| 13 | draft-ietf-lamps-pq-composite-kem | LAMPS | IESG evaluation | Standards | Late |
-| 14 | draft-ietf-lamps-pq-composite-sigs | LAMPS | WG, v-15, OIDs allocated | Standards | Mid |
-| 15 | draft-ietf-lamps-x509-shbs | LAMPS | IESG evaluation | Standards | Late |
-| 16 | draft-ietf-lamps-cms-sphincs-plus | LAMPS | **RFC 9814** | Standards | **DONE** |
-| 17 | draft-ietf-lamps-cms-kemri | LAMPS | **RFC 9629** | Standards | **DONE** |
-| 18 | draft-ietf-lamps-cert-binding-for-multi-auth | LAMPS | **RFC 9763** | Standards | **DONE** |
-| 19 | draft-ietf-lamps-rfc4210bis | LAMPS | **RFC 9810** | Standards | **DONE** |
-| 20 | draft-bonnell-lamps-chameleon-certs | LAMPS | Individual, v-07 | -- | Early |
-| 21 | draft-ietf-ipsecme-ikev2-mlkem | IPSECME | WG, v-04 | Standards | High |
-| 22 | draft-ietf-ipsecme-ikev2-pqc-auth | IPSECME | WG Last Call passed, v-06 | Standards | High |
-| 23 | draft-hu-ipsecme-pqt-hybrid-auth | IPSECME | Individual, v-04 | Standards | Medium |
-| 24 | draft-wang-ipsecme-hybrid-kem-ikev2-frodo | IPSECME | Adoption call (20+ support) | -- | Medium |
-| 25 | draft-ietf-sshm-mlkem-hybrid-kex | SSHM | **IETF Last Call complete** | Standards | Very High |
-| 26 | draft-ietf-sshm-ntruprime-ssh | SSHM | **IESG Approved (Informational)** | Informational | **DONE** |
-| 27 | draft-ietf-cose-dilithium | COSE | WG, v-11 | Standards | High |
-| 28 | draft-ietf-cose-sphincs-plus | COSE | WG, v-06 | Standards | Medium-High |
-| 29 | draft-ietf-jose-pqc-kem | JOSE | WG, v-05 | Standards | Medium-High |
-| 30 | draft-reddy-cose-jose-pqc-hybrid-hpke | COSE | Individual, v-11 | -- | Medium |
-| 31 | draft-ietf-openpgp-pqc | OpenPGP | **IESG Approved (Proposed Standard)** | Standards | **DONE** |
-| 32 | draft-ietf-mls-combiner | MLS | WG, v-01 | Standards | Low-Medium |
-| 33 | draft-connolly-cfrg-xwing-kem | CFRG | Individual, v-09 | Informational | Medium |
-| 34 | draft-fluhrer-lms-more-parm-sets | CFRG | IRSG evaluation, v-19 | Informational | High |
+| 5 | draft-ietf-tls-cert-abridge | TLS | WG, v-02 | Standards | Medium |
+| 6 | draft-sheffer-tls-pqc-continuity | TLS | Individual, v-01 | -- | Early |
+| 7 | draft-ietf-plants-merkle-tree-certs | PLANTS | WG, v-02 | Standards | Medium |
+| 8 | draft-ietf-tls-key-share-prediction | TLS | WG, v-03 | Standards | Medium-High |
+| 9 | draft-reddy-tls-slhdsa | TLS | Individual, adoption call | Standards | Low |
+| 10 | draft-reddy-tls-composite-mldsa | TLS | Individual, likely expired | Standards | Stalled |
+| 11 | draft-farrell-tls-pqg | TLS | Individual, v-04 | BCP | Medium |
+| 12 | RFC 9881 | LAMPS | **Published RFC** | Standards | **DONE** |
+| 13 | RFC 9882 | LAMPS | **Published RFC** | Standards | **DONE** |
+| 14 | RFC 9909 | LAMPS | **Published RFC** | Standards | **DONE** |
+| 15 | RFC 9802 | LAMPS | **Published RFC** | Standards | **DONE** |
+| 16 | draft-ietf-lamps-kyber-certificates | LAMPS | **IESG Approved** | Standards | Near-done |
+| 17 | draft-ietf-lamps-cms-kyber | LAMPS | IESG ballot | Standards | Near-done |
+| 18 | draft-ietf-lamps-pq-composite-kem | LAMPS | IESG evaluation | Standards | Late |
+| 19 | draft-ietf-lamps-pq-composite-sigs | LAMPS | WG, v-15, OIDs allocated | Standards | Mid |
+| 20 | draft-ietf-lamps-cms-composite-sigs | LAMPS | Submitted to IESG, v-04 | Standards | Late |
+| 21 | draft-turner-lamps-fn-dsa-certificates | LAMPS | Individual, v-00 | -- | Early |
+| 22 | draft-turner-lamps-cms-fn-dsa | LAMPS | Individual, v-00 | -- | Early |
+| 23 | draft-reddy-lamps-x509-pq-commit | LAMPS | Individual, v-01 | -- | Early |
+| 24 | RFC 9814 | LAMPS | **Published RFC** | Standards | **DONE** |
+| 25 | RFC 9629 | LAMPS | **Published RFC** | Standards | **DONE** |
+| 26 | RFC 9763 | LAMPS | **Published RFC** | Standards | **DONE** |
+| 27 | RFC 9810 | LAMPS | **Published RFC** | Standards | **DONE** |
+| 28 | draft-bonnell-lamps-chameleon-certs | LAMPS | Individual, v-07 | -- | Early |
+| 29 | draft-ietf-ipsecme-ikev2-mlkem | IPSECME | WG, v-04 | Standards | High |
+| 30 | draft-ietf-ipsecme-ikev2-pqc-auth | IPSECME | WG Last Call passed, v-06 | Standards | High |
+| 31 | draft-hu-ipsecme-pqt-hybrid-auth | IPSECME | Individual, v-04 | Standards | Medium |
+| 32 | draft-wang-ipsecme-hybrid-kem-ikev2-frodo | IPSECME | Adoption call (20+ support) | -- | Medium |
+| 33 | draft-reddy-ipsecme-ikev2-hybrid-reliable | IPSECME | Individual, v-00 | -- | Early |
+| 34 | draft-ietf-sshm-mlkem-hybrid-kex | SSHM | **IETF Last Call complete** | Standards | Very High |
+| 35 | draft-ietf-sshm-ntruprime-ssh | SSHM | **IESG Approved (Informational)** | Informational | **DONE** |
+| 36 | draft-harrison-sshm-mlkem | SSHM | Individual, v-01 | -- | Early |
+| 37 | draft-ietf-hpke-pq | HPKE | WG, v-04 | Standards | Medium-High |
+| 38 | draft-ietf-cose-dilithium | COSE | WG, v-11 | Standards | High |
+| 39 | draft-ietf-cose-sphincs-plus | COSE | WG, v-06 | Standards | Medium-High |
+| 40 | draft-ietf-jose-pqc-kem | JOSE | WG, v-05 | Standards | Medium-High |
+| 41 | draft-reddy-cose-jose-pqc-hybrid-hpke | COSE | Individual, v-11 | -- | Medium |
+| 42 | draft-skokan-jose-hpke-pq-pqt | JOSE | Individual, v-03 | -- | Early |
+| 43 | draft-ietf-openpgp-pqc | OpenPGP | **IESG Approved (Proposed Standard)** | Standards | **DONE** |
+| 44 | draft-ietf-mls-combiner | MLS | WG, v-01 | Standards | Low-Medium |
+| 45 | draft-reddy-emu-pqc-eap-tls | EMU | Individual, v-02 | -- | Early |
+| 46 | draft-ietf-emu-pqc-eapaka | EMU | WG, v-01 | Standards | Early |
+| 47 | draft-spm-lake-pqsuites | LAKE | Individual, v-01 | -- | Early |
+| 48 | draft-lake-pocero-authkem-edhoc | LAKE | Individual, v-00 | -- | Very Early |
+| 49 | draft-ietf-acme-profiles | ACME | WG, v-01 | Standards | **Production** |
+| 50 | draft-davidben-acme-profile-sets | ACME | Individual, v-00 | -- | Early |
+| 51 | draft-sheth-pqc-dnssec-strategy | DNSOP | Individual, v-00 | -- | Early |
+| 52 | draft-fregly-research-agenda-for-pqc-dnssec | DNSOP | Individual, expired | -- | Stalled |
+| 53 | draft-ietf-uta-pqc-app | UTA | WG, v-01 | -- | Early |
+| 54 | draft-connolly-cfrg-xwing-kem | CFRG | Individual, v-09 | Informational | Medium |
+| 55 | draft-fluhrer-lms-more-parm-sets | CFRG | IRSG evaluation, v-19 | Informational | High |
+| 56 | RFC 9794 | PQUIP | **Published RFC** | Informational | **DONE** |
+| 57 | draft-ietf-pquip-pqc-engineers | PQUIP | WG Adopted | Informational | Medium |
+| 58 | draft-ietf-pquip-pqc-hsm-constrained | PQUIP | WG, v-03, waiting write-up | Informational | Medium-High |
+| 59 | draft-reddy-pquip-pqc-signature-migration | PQUIP | Individual, v-01 | -- | Early |
+| 60 | draft-prabel-pquip-pqc-guidance | PQUIP | Individual, v-01 | -- | Early |
 
 ---
 
-*Generated 2026-03-04. Sources: IETF Datatracker, Cloudflare blog, DJB blog series, LWN, PKI Consortium, NIST CSRC, various WG mailing lists.*
+*Generated 2026-03-04. Sources: IETF Datatracker, Cloudflare blog, DJB blog series, LWN, PKI Consortium, NIST CSRC, ETSI, ISO, 3GPP, various WG mailing lists.*
