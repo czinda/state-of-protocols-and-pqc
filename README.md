@@ -33,6 +33,9 @@ For a detailed analysis with pros/cons for each draft and cross-WG debate summar
 | EAP | Progressing | EAP-AKA' PQ KEM v-02 updated; EAP-TLS PQC considerations active |
 | EDHOC (LAKE) | Early | PQ cipher suites and KEM auth drafts |
 | DNSSEC | Research | Sig sizes far exceed UDP limits; MTL mode and strategy drafts |
+| Kerberos/PKINIT | **PQC GAP** | PKINIT DH key exchange quantum-vulnerable; **no PQ KEM proposed**. SPAKE EC groups exposed. GSS-API PQC SSH draft (Red Hat). |
+| Signal | **Production** | PQXDH (2023) + Triple Ratchet/SPQR (2025). Most advanced consumer PQC. |
+| WireGuard | Workaround | PSK+PQC delivery deployed (ExpressVPN). No crypto agility by design. |
 
 ---
 
@@ -215,6 +218,25 @@ Same convention applies to Kyber/ML-KEM, SPHINCS+/SLH-DSA, and FALCON/FN-DSA.
 |-------|--------|------|-------|-------|
 | PQC Recommendations for TLS Apps | WG Document (v-01) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-uta-pqc-app/) | PQC deployment guidance for applications | Recommendations for apps using TLS to enable PQC. Practical migration guidance. |
 
+### Kerberos / PKINIT / GSS-API
+
+| Draft | Status | Link | Topic | Notes |
+|-------|--------|------|-------|-------|
+| PKINIT (RFC 4556) | **PQC GAP — No draft exists** | [RFC](https://www.rfc-editor.org/rfc/rfc4556) | Public key pre-auth for Kerberos | DH key exchange is quantum-vulnerable. No PQ KEM replacement proposed. Kitten WG has no PQC work items. **Critical gap for IdM/FreeIPA.** |
+| OCSP for PKINIT (RFC 4557) | **Needs update** | [RFC](https://www.rfc-editor.org/rfc/rfc4557) | OCSP usage in PKINIT | Explicitly lists RSA, DSA, SHA-1. Needs algorithm agility update. |
+| GSS-API PQC Key Exchange (SSH) | Individual (v-00, Apr 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-kario-gss-keyex-pqc/) | GSS-API ML-KEM hybrid KEX for SSH | **Red Hat authored (Alicja Kario).** Defines gss-mlkem768nistp256, gss-mlkem1024nistp384, gss-mlkem768x25519. Builds on SSH ML-KEM draft. |
+| Kerberos SPAKE Pre-Auth (RFC 9588) | **PQC EXPOSED** | [RFC](https://www.rfc-editor.org/rfc/rfc9588) | SPAKE2 pre-auth for Kerberos | Uses EC groups (edwards25519, P-256) — quantum-vulnerable. No PQ PAKE draft for Kerberos. |
+| PQ PAKE (CPaceOQUAKE+) | Individual (v-01, Apr 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-vos-cfrg-pqpake/) | Post-quantum aPAKE | CFRG draft. Could eventually replace SPAKE for Kerberos. Apple/UC Irvine authored. Early stage. |
+| Kerberos-over-TLS | Expired | [Datatracker](https://datatracker.ietf.org/doc/draft-vanrein-tls-kdh/) | TLS transport for Kerberos | Would inherit PQC from TLS. Expired 2020, no activity. |
+
+### DTLS / WireGuard / Signal
+
+| Draft | Status | Link | Topic | Notes |
+|-------|--------|------|-------|-------|
+| DTLS 1.3 (RFC 9147) | **Inherits from TLS 1.3** | [RFC](https://www.rfc-editor.org/rfc/rfc9147) | Datagram TLS | All TLS PQC key exchange drafts marked DTLS-OK. MTU fragmentation with hybrid key shares is main concern. |
+| WireGuard | **PSK workaround deployed** | -- | Modern VPN protocol | No crypto agility by design. PSK feature provides PQ protection when PSKs distributed via PQ-safe channel. ExpressVPN deployed at scale. PQ-WireGuard research exists (ML-KEM). |
+| Signal Protocol (PQXDH + SPQR) | **PRODUCTION DEPLOYED** | [Signal](https://signal.org/docs/specifications/pqxdh/) | End-to-end encryption | **Most advanced consumer PQC.** Phase 1: PQXDH (ML-KEM hybrid, Sep 2023). Phase 2: Triple Ratchet/SPQR (PQ forward secrecy, Oct 2025). Formally verified. Only gap: PQ deniable authentication. |
+
 ---
 
 ## PQC-Adjacent Improvements
@@ -360,18 +382,22 @@ These protocols embed IETF cryptographic building blocks and will inherit PQC su
 | DoH | [8484](https://datatracker.ietf.org/doc/rfc8484/) | DPRIVE | TLS |
 | EST | [7030](https://datatracker.ietf.org/doc/rfc7030/) | LAMPS | CMC, CMS, PKCS#10, TLS |
 | HTTPS | [9110](https://datatracker.ietf.org/doc/rfc9110/) | HTTPbis | TLS |
-| SCEP | [8894](https://datatracker.ietf.org/doc/rfc8894/) | LAMPS | CMS, PKCS#10 |
+| SCEP | [8894](https://datatracker.ietf.org/doc/rfc8894/) | LAMPS | CMS, PKCS#10 (legacy constraints; prefer EST/CMP for PQC) |
 | S/MIME | [5751](https://datatracker.ietf.org/doc/rfc5751/) | LAMPS | CMS (Sec 4.1 lists RSA/DSA/SHA-1 -- may need update) |
+| LDAPS/StartTLS | [4511](https://datatracker.ietf.org/doc/rfc4511/) | -- | TLS (inherits PQC from TLS stack) |
+| RadSec | [6614](https://datatracker.ietf.org/doc/rfc6614/) | RADEXT | TLS/DTLS (draft-ietf-radext-radiusdtls-bis updates) |
 
 ### Other
 
 | Protocol | RFC | WG | Dependencies |
 |----------|-----|-----|-------------|
 | SRTP | [3711](https://datatracker.ietf.org/doc/rfc3711/) | AVT | DTLS (KEX via DTLS, symmetric AEAD for media) |
+| OCSP | [6960](https://datatracker.ietf.org/doc/rfc6960/) | LAMPS | X.509 signatures (PQC sigs work but ~33x size increase; stapling adds to TLS overhead) |
+| Kerberos (core) | [4120](https://datatracker.ietf.org/doc/rfc4120/) | Kitten | Symmetric core is quantum-safe; PQ exposure via PKINIT and SPAKE extensions |
 
 ---
 
-## Real-World Deployment (March 2026)
+## Real-World Deployment (June 2026)
 
 ### Key Exchange -- Production
 

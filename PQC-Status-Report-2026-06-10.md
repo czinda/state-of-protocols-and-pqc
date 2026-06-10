@@ -646,6 +646,78 @@ Defines:
 
 ---
 
+## Kerberos / PKINIT / GSS-API
+
+### PKINIT (RFC 4556) -- Kerberos Public Key Pre-Authentication
+**Status:** **PQC GAP — No dedicated work exists.** Critical for IdM/FreeIPA.
+
+PKINIT uses DH key exchange and X.509 certificates for Kerberos pre-authentication. Both components are quantum-vulnerable. The Kitten WG has no PQC work items. RFC 4557 (OCSP for PKINIT) explicitly lists RSA, DSA, SHA-1 and needs updating.
+
+| Pros | Cons |
+|------|------|
+| X.509 certificate auth will inherit PQC from LAMPS WG | **DH key exchange has NO PQ KEM replacement proposed** |
+| Well-defined protocol with clear upgrade points | Kitten WG has no active PQC effort |
+| FreeIPA/Active Directory both use PKINIT | RFC 4557 (OCSP for PKINIT) lists only legacy algorithms |
+| | No IETF draft, no research paper, no proposal |
+
+**Assessment:** This is a genuine standardization gap. The certificate authentication side will eventually inherit PQC, but the DH key exchange requires protocol-level changes that nobody has started. High priority for organizations using PKINIT (IdM, AD).
+
+### Kerberos SPAKE Pre-Auth (RFC 9588)
+**Status:** **PQC EXPOSED.** EC groups are quantum-vulnerable. No PQ PAKE draft for Kerberos.
+
+| Pros | Cons |
+|------|------|
+| Kerberos core (symmetric) is quantum-safe | SPAKE2 EC groups (edwards25519, P-256) are quantum-vulnerable |
+| Password-derived keys don't use public-key crypto | No PQ PAKE draft exists for Kerberos specifically |
+| draft-vos-cfrg-pqpake (CPaceOQUAKE+, Apr 2026) could be future path | PQ PAKE is early-stage CFRG research |
+
+### draft-kario-gss-keyex-pqc (GSS-API PQC Key Exchange for SSH)
+**Status:** Individual (v-00, Apr 2026). **Red Hat authored** (Alicja Kario).
+
+Defines GSS-API key exchange with hybrid ML-KEM for SSH: `gss-mlkem768nistp256-sha256-*` (RECOMMENDED), `gss-mlkem1024nistp384-sha384-*`, `gss-mlkem768x25519-sha256-*`.
+
+| Pros | Cons |
+|------|------|
+| **Red Hat authored** — direct alignment with IdM/FreeIPA | Individual draft, not WG-adopted |
+| Builds on SSH ML-KEM draft (RFC Ed Queue) | GSS-API/Kerberos for non-SSH protocols still exposed |
+| Three hybrid ML-KEM combinations defined | Very early stage (v-00) |
+| CNSA 2.0 compliant (mlkem1024nistp384) | |
+
+---
+
+## DTLS / WireGuard / Signal Protocol
+
+### DTLS 1.3 (RFC 9147)
+**Status:** Inherits from TLS 1.3. All PQC key exchange drafts marked DTLS-OK.
+
+| Pros | Cons |
+|------|------|
+| All TLS PQC key exchange drafts explicitly support DTLS | Hybrid key shares (~2.3 KB) exceed typical 1,500-byte MTU |
+| DTLS handles fragmentation natively | Fragmentation adds round-trips for constrained devices |
+| QUIC uses TLS 1.3 directly and inherits PQC | QUIC uses own fragmentation, not DTLS fragmentation |
+
+### WireGuard
+**Status:** No crypto agility by design. PSK workaround deployed commercially.
+
+| Pros | Cons |
+|------|------|
+| PSK feature provides PQ protection when distributed via PQ-safe channel | No crypto agility — cannot add ML-KEM directly |
+| ExpressVPN deployed PSK+ML-KEM at scale (15-20ms overhead) | True PQ-WireGuard would be a different protocol |
+| PQ-WireGuard research exists (ML-KEM based) | Not an IETF protocol — adoption is implementation-driven |
+| Tailscale documenting PQC considerations | |
+
+### Signal Protocol (PQXDH + SPQR)
+**Status:** **PRODUCTION DEPLOYED.** Most advanced consumer PQC deployment.
+
+| Pros | Cons |
+|------|------|
+| **Phase 1 PQXDH** (Sep 2023): ML-KEM hybrid initial key agreement | PQ deniable authentication remains unsolved research problem |
+| **Phase 2 SPQR** (Oct 2025): PQ forward secrecy + post-compromise security | Not an IETF/standards-track protocol |
+| Formally verified (ProVerif) at Eurocrypt 2025, USENIX Security 2025 | Authentication still classical |
+| Sets benchmark for all consumer E2E encryption | |
+
+---
+
 ## CFRG (Crypto Forum Research Group)
 
 ### draft-irtf-cfrg-hybrid-kems v-11 (CFRG Hybrid KEMs Combiner)
@@ -924,6 +996,13 @@ No practical break of ML-KEM or ML-DSA announced, but active hedging:
 | 62 | draft-ietf-pquip-pqc-hsm-constrained | PQUIP | Waiting Write-Up, v-04 | Informational | Medium-High |
 | 63 | draft-reddy-pquip-pqc-signature-migration | PQUIP | Individual, v-01 | -- | Early |
 | 64 | draft-prabel-pquip-pqc-guidance | PQUIP | Individual, v-01 | -- | Early |
+| 65 | PKINIT (RFC 4556) | Kitten | **PQC GAP — no draft** | -- | **Exposed** |
+| 66 | Kerberos SPAKE (RFC 9588) | Kitten | **PQC EXPOSED** (EC groups) | -- | **Exposed** |
+| 67 | draft-kario-gss-keyex-pqc | Kitten/SSHM | Individual, v-00 (Red Hat) | -- | Early |
+| 68 | draft-vos-cfrg-pqpake | CFRG | Individual, v-01 | -- | Very Early |
+| 69 | Signal PQXDH + SPQR | -- | **Production Deployed** | -- | **Production** |
+| 70 | WireGuard PSK+PQC | -- | Deployed (PSK workaround) | -- | Workaround |
+| 71 | DTLS 1.3 (RFC 9147) | TLS | Inherits from TLS 1.3 PQC | -- | High |
 
 ---
 
