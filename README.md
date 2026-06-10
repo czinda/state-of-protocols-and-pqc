@@ -2,7 +2,7 @@
 
 > **Personal tracking fork** of [ietf-wg-pquip/state-of-protocols-and-pqc](https://github.com/ietf-wg-pquip/state-of-protocols-and-pqc)
 >
-> **Last updated:** 2026-05-26
+> **Last updated:** 2026-06-10
 
 This repository tracks the status of IETF drafts and RFCs related to post-quantum cryptography (PQC) migration across Internet protocols. It is a fork of the IETF PQUIP working group's official tracker, augmented with:
 
@@ -13,20 +13,20 @@ This repository tracks the status of IETF drafts and RFCs related to post-quantu
 - Regulatory driver context (CNSA 2.0, EO 14144, BSI, ANSSI)
 - Non-IETF standards tracking (ETSI, ISO, 3GPP, NIST SP, BSI, ANSSI, OASIS, TCG, W3C, IEEE)
 
-For a detailed analysis with pros/cons for each draft and cross-WG debate summaries, see [PQC-Status-Report-2026-05-26.md](PQC-Status-Report-2026-05-26.md).
+For a detailed analysis with pros/cons for each draft and cross-WG debate summaries, see [PQC-Status-Report-2026-06-10.md](PQC-Status-Report-2026-06-10.md).
 
 ---
 
-## At a Glance (May 2026)
+## At a Glance (June 2026)
 
 | Area | Readiness | Key Signal |
 |------|-----------|------------|
-| KEM Key Exchange | **Production** | X25519+ML-KEM-768 on ~60% of web traffic; ECDHE-MLKEM in RFC Ed Queue |
-| PQ Signatures in TLS | **IETF Last Call** | ML-DSA TLS draft v-03 in IETF Last Call (ends Jun 1); 14-39 KB handshake overhead unsolved |
-| PKI / Certificates | **~95% ready** | ML-KEM X.509 (RFC 9935), ML-KEM CMS (RFC 9936), ML-DSA COSE/JOSE (RFC 9964); **composite sigs cleared IESG → RFC Ed Queue**; composite KEM awaiting AD |
-| IPsec / IKEv2 | **AD Evaluation** | ML-KEM in AD evaluation; FrodoKEM WG-adopted; PQC auth write-up in progress |
+| KEM Key Exchange | **Production** | X25519+ML-KEM-768 on >65% of web traffic; ECDHE-MLKEM **IESG telechat Jun 18** |
+| PQ Signatures in TLS | **Waiting for AD** | ML-DSA TLS **passed IETF Last Call**; awaiting AD go-ahead; sig size crisis unsolved |
+| PKI / Certificates | **~95% ready** | Composite sigs + CMS composite sigs in RFC Ed Queue; composite KEM **stalled 71 days at AD**; **Let's Encrypt commits to MTCs** |
+| IPsec / IKEv2 | **IETF Last Call** | ML-KEM **advanced to IETF Last Call** (ends Jun 15); PQC auth write-up in progress |
 | SSH | **RFC Ed Queue** | ML-KEM hybrid in active RFC Editor processing; NTRU Prime published (RFC 9941) |
-| OpenPGP | **AUTH48 → RFC 9980** | Assigned RFC 9980. In final author review. Publication imminent. |
+| OpenPGP | **AUTH48 → RFC 9980** | All authors approved. Blocked on AD editorial response. Publication imminent. |
 | COSE / JOSE | **RFC 9964 Published** | ML-DSA COSE/JOSE now RFC 9964; KEM progressing; hybrid HPKE lagging |
 | MLS | **Expired** | Combiner v-02 expired Apr 25; needs new revision; PQ ciphersuites v-04 active |
 | HPKE | Active | PQ/hybrid KEMs v-04 for HPKE in progress |
@@ -43,10 +43,10 @@ For a detailed analysis with pros/cons for each draft and cross-WG debate summar
 | FIPS 203 | ML-KEM | CRYSTALS-Kyber | **Final** (Aug 2024) |
 | FIPS 204 | ML-DSA | CRYSTALS-Dilithium | **Final** (Aug 2024) |
 | FIPS 205 | SLH-DSA | SPHINCS+ | **Final** (Aug 2024) |
-| FIPS 206 | FN-DSA | FALCON | IPD submitted Aug 2025; public review open; final expected late 2026-early 2027 |
+| FIPS 206 | FN-DSA | FALCON | IPD stuck in DoC clearance (submitted Aug 2025). **NSA: FN-DSA excluded from CNSA 2.0 permanently** (implementation error susceptibility). Final expected late 2026-early 2027 at earliest. |
 | -- | HQC | Error-correcting codes | Selected Mar 2025, backup KEM (~2027) |
 
-**Additional Signature Schemes (Round 2):** 14 candidates -- CROSS, FAEST, HAWK, LESS, MAYO, Mirath, MQOM, PERK, QR-UOV, RYDE, SDitH, SNOVA, SQIsign, UOV. Round 3 down-select planned 2026.
+**Additional Signature Schemes (Round 3, May 2026):** NIST advanced **9 candidates** from Round 2 (NIST IR 8610, May 14, 2026): FAEST, HAWK, MAYO, MQOM, QR-UOV, SDitH, SNOVA, SQIsign, UOV. *Eliminated:* CROSS, LESS, Mirath, PERK, RYDE. Specification tweaks due **Aug 14, 2026**. 7th PQC Conference planned spring/summer 2027.
 
 ### IETF Algorithm Naming Convention
 
@@ -89,15 +89,15 @@ Same convention applies to Kyber/ML-KEM, SPHINCS+/SLH-DSA, and FALCON/FN-DSA.
 
 | Draft | Status | Link | Topic | Notes |
 |-------|--------|------|-------|-------|
-| ECDHE-MLKEM Hybrid KEX | **RFC Ed Queue** (v-04, Feb 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-ecdhe-mlkem/) | X25519MLKEM768, SecP256r1MLKEM768, SecP384r1MLKEM1024 | **PRODUCTION DEPLOYED.** ~60% of Cloudflare traffic. Default in Chrome/Firefox/Edge. IESG approved. |
+| ECDHE-MLKEM Hybrid KEX | **IESG Evaluation** (v-05, May 2026; telechat **Jun 18**) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-ecdhe-mlkem/) | X25519MLKEM768, SecP256r1MLKEM768, SecP384r1MLKEM1024 | **PRODUCTION DEPLOYED.** >65% of Cloudflare traffic. Default in Chrome/Firefox/Edge. v-05: Standards Track, normative hybrid design ref, obsoletes pre-standard Kyber768 code points. |
 | Pure ML-KEM KEX | Revised I-D Needed (v-07, Feb 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-mlkem/) | Non-hybrid ML-KEM for TLS | **CONTROVERSIAL.** DJB formal IETF appeals. WGLC issues raised; revision needed. Scheduled for IETF-125. Required for CNSA 2.0 by 2033. |
-| ML-DSA Authentication | **IETF Last Call** (v-03, May 2026; LC ends Jun 1) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-mldsa/) | ML-DSA for TLS 1.3 auth | **Submitted to IESG.** GENART review: "Ready." SECDIR pending. Signature size crisis (~17 KB) still unsolved. |
+| ML-DSA Authentication | **Waiting for AD Go-Ahead** (v-03, May 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-mldsa/) | ML-DSA for TLS 1.3 auth | **Passed IETF Last Call.** GENART: "Ready." SECDIR: "Has nits." Awaiting AD (Deb Cooley) go-ahead. Signature size crisis (~17 KB) still unsolved. |
 | Certificate Compression (Abridged Certs) | Expired (v-02, Mar 2025) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-cert-abridge/) | Cert chain compression for TLS | Expired. Reduces PQ cert overhead via ICA suppression and compression. Complementary to Merkle Tree Certs. |
 | SLH-DSA Authentication | In ISE Review (v-02, Nov 2025) | [Datatracker](https://datatracker.ietf.org/doc/draft-reddy-tls-slhdsa/) | SLH-DSA for TLS 1.3 auth | Sigs 7,856-49,856 bytes. In Independent Submission Editor review. |
 | Composite ML-DSA | Individual (v-09), likely expired | [Datatracker](https://datatracker.ietf.org/doc/draft-reddy-tls-composite-mldsa/) | Composite hybrid sigs in TLS | NOT adopted by WG. Doubles signature overhead. |
 | PQC Continuity / Downgrade Protection | Individual (v-00) | [Datatracker](https://datatracker.ietf.org/doc/draft-sheffer-tls-pqc-continuity/) | Anti-downgrade for PQC transition | Ensures clients that previously used PQC cannot be silently downgraded. |
 | Unheaded PQC Authentication | Individual (v-00, Mar 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-bellis-unheaded-pqc-authentication/) | PQC auth without header overhead | **NEW.** Submitted Mar 19. |
-| Hybrid KEX Framework | **RFC Ed Queue** (v-16, Sep 2025) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-hybrid-design/) | Hybrid key exchange design | Foundational. Concatenation-based. Informational. IESG approved; in RFC Editor queue. |
+| Hybrid KEX Framework | **AUTH48 → RFC 9954** (v-16, Sep 2025) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-hybrid-design/) | Hybrid key exchange design | **Assigned RFC 9954.** All authors approved. Blocked on normative ref dependency (RFC-to-be 9846). Publication imminent. |
 | PQ Guidance | Individual (v-04, Dec 2025) | [Datatracker](https://datatracker.ietf.org/doc/draft-farrell-tls-pqg/) | Deployment recommendations | Hybrid KEMs now; no action on sigs yet. Not a WG document. |
 | KEMTLS (KEM-based Auth) | Expired | [Datatracker](https://datatracker.ietf.org/doc/draft-celi-wiggers-tls-authkem/) | KEM-based auth | Research-stage. Would eliminate PQ sig size problem. |
 | X25519Kyber768Draft00 | Expired (superseded) | [Datatracker](https://datatracker.ietf.org/doc/draft-tls-westerbaan-xyber768d00) | Pre-standard Kyber hybrid | Superseded by draft-ietf-tls-ecdhe-mlkem |
@@ -112,9 +112,9 @@ Same convention applies to Kyber/ML-KEM, SPHINCS+/SLH-DSA, and FALCON/FN-DSA.
 | ML-DSA in CMS | **RFC 9882** | [RFC](https://www.rfc-editor.org/rfc/rfc9882) | ML-DSA for CMS signatures | **Published RFC.** CMS counterpart to RFC 9881. |
 | ML-KEM for X.509 | **RFC 9935** | [RFC](https://www.rfc-editor.org/rfc/rfc9935) | ML-KEM algorithm IDs for X.509 | **Published RFC** (Mar 2026). Proposed Standard. |
 | Composite ML-DSA Sigs | **RFC Ed Queue** (v-19, May 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-sigs/) | ML-DSA + traditional composite | **Cleared IESG.** 4 revisions (v-16→v-19) to address review comments. OIDs early-allocated. ANSSI/BSI favor; NSA opposes. |
-| Composite ML-KEM | **Publication Requested** (v-14, Mar 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-kem/) | ML-KEM + traditional composite | Submitted to IESG (Mar 27). **Awaiting AD action (55+ days).** Shepherd: Russ Housley. |
+| Composite ML-KEM | **Publication Requested** (v-14, Mar 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-kem/) | ML-KEM + traditional composite | Submitted to IESG (Mar 27). **Stalled — awaiting AD action (71+ days).** No telechat scheduled. Shepherd: Russ Housley. |
 | Composite ML-DSA in CMS | **RFC Ed Queue** (v-05, May 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-lamps-cms-composite-sigs/) | Composite ML-DSA signatures in CMS | **Cleared IETF LC + IESG.** Blocked in RFC Ed on normative refs (composite sigs draft). All directorate reviews positive. |
-| Composite ML-KEM in CMS | **In WG Last Call** (v-01, May 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-lamps-cms-composite-kem/) | Composite ML-KEM for CMS | **Advanced to WG Last Call.** CMS bindings for composite KEM. Depends on composite KEM draft. |
+| Composite ML-KEM in CMS | **Publication Requested** (v-01, May 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-lamps-cms-composite-kem/) | Composite ML-KEM for CMS | **Advanced from WG Last Call to Publication Requested.** Shepherd write-up updated Jun 3. Awaiting AD action. Depends on composite KEM draft. |
 | ML-KEM in CMS | **RFC 9936** | [RFC](https://www.rfc-editor.org/rfc/rfc9936) | ML-KEM via KEMRecipientInfo | **Published RFC** (Mar 2026). Standards Track. |
 | SLH-DSA in CMS | **RFC 9814** | [Datatracker](https://datatracker.ietf.org/doc/rfc9814/) | SLH-DSA in CMS | First PQC CMS signature RFC. |
 | FN-DSA for X.509 | Individual | [Datatracker](https://datatracker.ietf.org/doc/draft-turner-lamps-fn-dsa-certificates/) | FN-DSA algorithm IDs for X.509 | Awaiting FIPS 206 finalization. Smallest PQ sig sizes. |
@@ -128,7 +128,7 @@ Same convention applies to Kyber/ML-KEM, SPHINCS+/SLH-DSA, and FALCON/FN-DSA.
 
 | Draft | Status | Link | Topic | Notes |
 |-------|--------|------|-------|-------|
-| ML-KEM in IKEv2 | **AD Evaluation** (v-05, Mar 2026), Standards Track | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-ipsecme-ikev2-mlkem/) | ML-KEM key exchange | **In IESG AD evaluation.** 4 known implementations (Cisco, Palo Alto, strongSwan, Apple). IPR disclosure Mar 26. |
+| ML-KEM in IKEv2 | **IETF Last Call** (v-05, Mar 2026; LC ends **Jun 15**), Standards Track | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-ipsecme-ikev2-mlkem/) | ML-KEM key exchange | **Advanced to IETF Last Call.** TSVART review: "Ready w/nits." SECDIR/GENART due Jun 15. 4 implementations (Cisco, Palo Alto, strongSwan, Apple). IPR disclosure Mar 26. |
 | PQC Auth in IKEv2 | **Awaiting Write-Up** (v-06, Oct 2025) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-ipsecme-ikev2-pqc-auth/) | ML-DSA + SLH-DSA auth | Uses RFC 8420 framework. Shepherd write-up in progress (updated Mar 28). Shepherd: Tero Kivinen. |
 | PQ/T Hybrid Auth | Individual (v-04, Feb 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-hu-ipsecme-pqt-hybrid-auth/) | Hybrid auth via composite/multi-cert | Not WG-adopted. |
 | FrodoKEM in IKEv2 | **WG Adopted** (v-00, Mar 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-ipsecme-hybrid-kem-ikev2-frodo/) | FrodoKEM alternative KEM | **Newly WG-adopted Mar 11.** BSI/ANSSI recommended conservative KEM. 20+ support in adoption call. |
@@ -169,7 +169,7 @@ Same convention applies to Kyber/ML-KEM, SPHINCS+/SLH-DSA, and FALCON/FN-DSA.
 
 | Draft | Status | Link | Topic | Notes |
 |-------|--------|------|-------|-------|
-| PQC in OpenPGP | **AUTH48 → RFC 9980**, Proposed Standard (v-17, Jan 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-openpgp-pqc/) | PQC extension for OpenPGP | **Assigned RFC 9980.** In AUTH48 final author review since May 8. Awaiting author approvals and AD editorial response. Publication imminent. Composite: ML-DSA-65+Ed25519 (MUST), ML-DSA-87+Ed448 (SHOULD). ML-KEM+ECDH. SLH-DSA standalone (MAY). BSI-backed. Multiple interop implementations. |
+| PQC in OpenPGP | **AUTH48 → RFC 9980**, Proposed Standard (v-17, Jan 2026) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-openpgp-pqc/) | PQC extension for OpenPGP | **Assigned RFC 9980.** All 4 authors approved (May 28-30). **Blocked on AD (Paul Wouters)** responding to editorial questions #8 and #12. Composite: ML-DSA-65+Ed25519 (MUST), ML-DSA-87+Ed448 (SHOULD). ML-KEM+ECDH. SLH-DSA standalone (MAY). BSI-backed. Multiple interop implementations. |
 
 ### MLS
 
@@ -242,8 +242,8 @@ Infrastructure work that enables or smooths PQC migration.
 
 | Title | Status | Link | WG | Notes |
 |-------|--------|------|----|-------|
-| Merkle Tree Certificates | **PLANTS WG Adopted** (v-04, May 2026), Standards Track | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-plants-merkle-tree-certs/) | PLANTS | **Most promising PQ sig size solution.** <800 byte proofs vs ~17 KB sigs. Chrome "preferred option for PQ certs." Google+Cloudflare. Fresh v-04 May 24. |
-| Hybrid KEX in TLS 1.3 | **RFC Ed Queue** (v-16, Sep 2025) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-hybrid-design/) | TLS | Foundational framework. Concatenation-based. IESG approved. |
+| Merkle Tree Certificates | **PLANTS WG Adopted** (v-04, May 2026), Standards Track | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-plants-merkle-tree-certs/) | PLANTS | **Most promising PQ sig size solution.** <800 byte proofs vs ~17 KB sigs. Chrome "preferred option for PQ certs." Google+Cloudflare. **Let's Encrypt committed Jun 3** — staging late 2026, production 2027. |
+| Hybrid KEX in TLS 1.3 | **AUTH48 → RFC 9954** (v-16, Sep 2025) | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-hybrid-design/) | TLS | **Assigned RFC 9954.** All authors approved. Blocked on normative ref dependency. |
 | TLS Key Share Prediction | WG Document (v-04, Mar 2026), Standards Track | [Datatracker](https://datatracker.ietf.org/doc/draft-ietf-tls-key-share-prediction/) | TLS | DNS-based keyshare signaling. Avoids PQ retransmission. Updates RFC 8446. |
 | Chameleon Certificates | Individual (v-07, Oct 2025) | [Datatracker](https://datatracker.ietf.org/doc/draft-bonnell-lamps-chameleon-certs/) | LAMPS | Efficient paired cert encoding. Competing with composites/RFC 9763. |
 | External Keys for X.509 | Expired (v-05, Apr 2025) | [Datatracker](https://datatracker.ietf.org/doc/html/draft-ounsworth-lamps-pq-external-pubkeys) | LAMPS | External key references by hash+URL. Limited interest. |
@@ -377,37 +377,40 @@ These protocols embed IETF cryptographic building blocks and will inherit PQC su
 
 | Platform | Status |
 |----------|--------|
-| **Cloudflare** | ~60% of human TLS traffic uses hybrid ML-KEM. **Full PQ SASE** (TLS + MASQUE + IPsec) as of Feb 2026. PQ automatic for all origins by Jun 2026. 6M+ domains. Radar PQ tracking dashboard launched. Zero Trust PQC features expected Jun 2026. |
+| **Cloudflare** | >65% of human TLS traffic uses hybrid ML-KEM. **Full PQ SASE** (TLS + MASQUE + IPsec) as of Feb 2026. PQ automatic for all origins mid-2026. ML-DSA support for origin connections **mid-2026**. MTC support **mid-2027**. Cloudflare One PQ auth **early 2028**. PQC roadmap accelerated to **2029 hard deadline**. |
 | **Chrome** | X25519+ML-KEM default. ML-KEM disable option removed in Chrome 138. Kyber→ML-KEM transition complete. |
 | **Firefox** | X25519MLKEM768 hybrid since Firefox 135. X25519+ML-KEM enabled by default since Firefox 132. |
 | **Edge** | ML-KEM hybrid PQ TLS supported since Edge 131. |
-| **Safari** | Apple PQ TLS 1.3 key exchange in macOS Tahoe 26 / iOS 26 / visionOS 26. New quantum-secure developer APIs. |
+| **Safari** | Apple PQ TLS 1.3 key exchange in macOS Tahoe 26 / iOS 26 / visionOS 26. **Corecrypto open-sourced** (May 22) with ML-KEM + ML-DSA. CryptoKit exposes ML-KEM-768/1024, ML-DSA-65/87. PQ in VPN (IKEv2), SSH, Apple Watch. |
 | **Akamai** | PQ mid-tier connections completed across all networks Q1 2026. All Akamai-to-Akamai connections quantum safe. |
-| **AWS** | ML-KEM PQ TLS in KMS, ACM, Secrets Manager. ML-DSA keys available via KMS APIs (GA). AWS Payments Cryptography supports hybrid PQ TLS. Pre-standard Kyber support ends 2026. |
-| **Microsoft** | PQC APIs GA in Windows Server 2025, Windows 11 (24H2, 25H2), .NET 10. PQC in ADCS targeted early 2026. |
+| **AWS** | ML-KEM PQ TLS in KMS, ACM, Secrets Manager. ML-DSA keys available via KMS APIs (GA). **IAM Roles Anywhere** supports ML-DSA-signed CA certificates (Mar 2026). **Secrets Manager** hybrid PQ TLS auto-enabled in Agent 2.0.0+. AWS-LC first FIPS-validated open-source crypto with ML-KEM. Pre-standard Kyber being removed 2026. |
+| **Microsoft** | PQC APIs GA in Windows Server 2025, Windows 11 (24H2, 25H2), .NET 10. **AD CS ML-DSA support GA** (May 2026 KB5087539): ML-DSA-44/65/87 for CA cert signing, code signing, OCSP. Composite ML-DSA+ECDSA in Windows Insider. |
 | **OpenSSH** | sntrup761x25519 default ~5 years. ML-KEM hybrid draft in RFC Ed Queue. |
 
 ### Signatures / Certificates -- Not Yet Deployed
 
-- No public PQ certificates in production as of early 2026.
-- First PQ certificates expected 2026; broad browser trust unlikely before 2027.
-- **Merkle Tree Certificates (MTC):** Chrome will NOT use ML-DSA in traditional X.509. MTCs are Chrome's "preferred (or only) option." Phase 1 experiment with Cloudflare (~1,000 certs) underway. Phase 2 (CT Log operators) Q1 2027. Phase 3 (Chrome Quantum-resistant Root Store) Q3 2027. Full ecosystem rollout may take 10-15 years.
+- No public PQ certificates in production as of mid-2026.
+- First PQ certificates expected late 2026; broad browser trust unlikely before 2027.
+- **Merkle Tree Certificates (MTC):** Chrome will NOT use ML-DSA in traditional X.509. MTCs are Chrome's "preferred (or only) option." **Let's Encrypt committed Jun 3** — staging late 2026, production 2027. Phase 1 experiment with Cloudflare (~1,000 certs) underway. Phase 2 (CT Log operators) Q1 2027. Phase 3 (Chrome Quantum-resistant Root Store) Q3 2027. Full ecosystem rollout may take 10-15 years.
+- **Google** set **2029 hard deadline** for full PQC migration. Android 17 integrates ML-DSA via KeyMint API.
 - Signature migration is less urgent: active quantum adversary needed (vs. passive harvest-now for KEMs).
-- **CA/Browser Forum SC-081v3:** Certificate validity shrinking to 200 days (Mar 2026), 100 days (Mar 2027), 47 days (Mar 2029) — accelerates PQC certificate issuance overhead.
+- **CA/Browser Forum SC-081v3:** Certificate validity 200 days (**active Mar 2026**), 100 days (Mar 2027), 47 days (Mar 2029) — enables crypto-agility for PQC algorithm adoption.
+- **CA/B Forum SMC013 (S/MIME):** Enables single-key/non-hybrid PQC certificates for S/MIME experimentation (adopted Aug 2025).
 
 ### Regulatory Drivers
 
 | Regulation | Requirement |
 |-----------|-------------|
 | **US EO 14144** (Jan 2025) | Agencies list PQC-ready products, mandate support within 90 days |
-| **NSA CNSA 2.0** | Software/firmware signing: exclusive ML-DSA by 2030; web/cloud: exclusive ML-KEM-1024 by 2033 |
+| **NSA CNSA 2.0** | VPNs/routers: support and prefer CNSA 2.0 **now (2026)**. New acquisitions compliant by **Jan 2027**. ML-DSA exclusive by 2030; ML-KEM-1024 exclusive by 2033. **FN-DSA permanently excluded.** FIPS 140-2 certs Historical **Sep 2026**. |
 | **NIST IR 8547** | Formal deprecation schedule: 15-year classical crypto phase-out roadmap |
 | **EU NIS2 PQC Amendment** (COM(2026) 13, Jan 2026) | **NEW.** Proposes mandatory PQC transition policies for all EU Member States |
 | **EU Coordinated Roadmap** | National PQC strategies by end 2026; high-risk use cases by 2030; full completion by 2035. Led by BSI with 21 European partners. |
-| **Germany BSI** | PQC for critical infrastructure by June 2026. Recommends ML-KEM-768/1024, FrodoKEM, SLH-DSA, ML-DSA Levels 3/5. |
+| **Germany BSI** | PQC for critical infrastructure by June 2026. Recommends ML-KEM, ML-DSA, SLH-DSA, FrodoKEM, Classic McEliece. **CRQC horizon shortened to 10-15 years** (was ~20). <5% of German orgs have migration plans. |
 | **France ANSSI** | Recommends hybrid approaches during transition; three-phase timeline through 2030. Sector-specific requirements for critical infrastructure. |
 | **Canada** | **NEW.** Federal departments must submit PQC migration plans by April 2026; critical systems by 2031; full migration by 2035. |
-| **CA/B Forum SC-081v3** | Certificate validity: 200 days (Mar 2026) → 100 days (Mar 2027) → 47 days (Mar 2029) |
+| **UAE** | **NEW.** National Cryptography Discovery Platform launched Jun 5, 2026 for PQC asset mapping and migration planning. |
+| **CA/B Forum SC-081v3** | Certificate validity: 200 days (**active** Mar 2026) → 100 days (Mar 2027) → 47 days (Mar 2029) |
 
 ---
 
@@ -415,8 +418,8 @@ These protocols embed IETF cryptographic building blocks and will inherit PQC su
 
 | Meeting | Location | Dates | PQC Notes |
 |---------|----------|-------|-----------|
-| **IETF 125** | Shenzhen | Mar 14-20, 2026 | Concluded. Key outcomes: composite sigs advanced to IESG, ML-DSA TLS progressed. |
-| **IETF 126** | Vienna | Jul 18-24, 2026 | Upcoming |
+| **IETF 125** | Shenzhen | Mar 14-20, 2026 | Concluded. Key outcomes: composite sigs cleared IESG, ML-DSA TLS to Last Call. |
+| **IETF 126** | Vienna | Jul 18-24, 2026 | Upcoming. Hosted by Cisco. PQC WGs expected: PQUIP, TLS, LAMPS, COSE, PLANTS, IPSECME, OPENPGP. |
 | **IETF 127** | San Francisco | Nov 14-20, 2026 | Upcoming |
 
 ---
@@ -430,5 +433,6 @@ These protocols embed IETF cryptographic building blocks and will inherit PQC su
 
 ## Related Files
 
-- [PQC-Status-Report-2026-05-26.md](PQC-Status-Report-2026-05-26.md) -- Detailed per-draft analysis with pros/cons, WG criticisms, and cross-cutting debate summaries
+- [PQC-Status-Report-2026-06-10.md](PQC-Status-Report-2026-06-10.md) -- Detailed per-draft analysis with pros/cons, WG criticisms, and cross-cutting debate summaries
+- [PQC-Status-Report-2026-05-26.md](PQC-Status-Report-2026-05-26.md) -- Previous status report (May 2026)
 - [PQC-Status-Report-2026-03-19.md](PQC-Status-Report-2026-03-19.md) -- Previous status report (March 2026)
