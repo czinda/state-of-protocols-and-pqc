@@ -56,4 +56,4 @@ These were added to the tracker because they are PQC-relevant protocol ecosystem
 | Late Oct 2026 | OMB M‑26‑15 migration plans due | Key driver for enterprise “what must interop” requirements. |
 | Nov 14–20, 2026 | IETF 127 | Likely venue for resolving stuck items (e.g., composite KEM DISCUSS) and reviving expired MLS combiner. |
 | Dec 2026 | MLS combiner milestone | Tracker shows combiner draft expired; expect a re-spin to meet milestone. |
-| Late 2026 → 2027 | MTC / PQ certificates ecosystem | Let’s Encrypt staging environment expected late 2026; broader rollout in 2027 (per Aug tracker context). |
+| Late 2026 → 2027 | MTC / PQ certificates ecosystem (PLANTS) | Let’s Encrypt staging environment expected late 2026; broader rollout in 2027 (MTC is a PLANTS WG deliverable and the most plausible path to browser-scale PQ authentication). |

@@ -23,7 +23,7 @@ For a detailed analysis with pros/cons for each draft and cross-WG debate summar
 |------|-----------|------------|
 | KEM Key Exchange | **Production** | **RFC 10024** published (ECDHE-MLKEM). >65% of web traffic. Standalone ML-KEM now in **RFC Editor Queue** (Informational). |
 | PQ Signatures in TLS | **Advancing** | ML-DSA TLS now in **RFC Editor Queue** (Informational). Sig size crisis (~17 KB) unsolved. |
-| PKI / Certificates | **~95% ready** | Composite sigs in RFC Ed Queue; composite KEM at **IESG Evaluation (Revised I-D Needed; DISCUSS)**; **FN-DSA WG-adopted**. MTC v-05. **Let's Encrypt committed to MTCs**. |
+| PKI / Certificates | **~95% ready** | Composite sigs in RFC Ed Queue; composite KEM at **IESG Evaluation (Revised I-D Needed; DISCUSS)**; **FN-DSA WG-adopted**. **MTC (PLANTS) v-05.** **Let's Encrypt committed to MTCs**. |
 | IPsec / IKEv2 | **RFC Ed Queue** | ML-KEM in RFC Ed Queue; PQC auth now also in **RFC Editor Queue**. |
 | SSH | **Published** | ML-KEM hybrid key exchange published as **RFC 10042** (Aug 2026). NTRU Prime published (RFC 9941). |
 | OpenPGP | **RFC 9980** | **Published Jun 30.** ML-DSA+Ed25519, ML-KEM+ECDH, SLH-DSA. BSI-backed. Multiple interop implementations. |
